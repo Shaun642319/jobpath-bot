@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>CV Template</title>
+  <style>
+    body {
+      font-family: "Times New Roman", serif;
+      margin: 40px;
+      color: #000;
+    }
+
+    .cv-container {
+      max-width: 800px;
+      margin: auto;
+    }
+
+    .name {
+      font-size: 28px;
+      text-align: center;
+      margin-bottom: 5px;
+    }
+
+    .contact {
+      text-align: center;
+      font-size: 12px;
+      margin-bottom: 20px;
+    }
+
+    .section-title {
+      font-size: 16px;
+      border-bottom: 1px solid #000;
+      margin-top: 25px;
+      margin-bottom: 10px;
+    }
+
+    .summary {
+      font-size: 13px;
+      line-height: 1.4;
+      margin-bottom: 15px;
+    }
+
+    .job {
+      margin-bottom: 15px;
+    }
+
+    .job-header {
+      display: flex;
+      justify-content: space-between;
+      font-size: 14px;
+      font-weight: bold;
+    }
+
+    .company-location {
+      font-style: italic;
+      font-size: 12px;
+      margin-bottom: 3px;
+    }
+
+    ul {
+      margin-top: 3px;
+      margin-bottom: 10px;
+      padding-left: 20px;
+      font-size: 12px;
+    }
+
+    li {
+      margin-bottom: 2px;
+    }
+
+    .skills {
+      columns: 3;
+      font-size: 12px;
+      margin-top: 5px;
+    }
+
+    .skills li {
+      margin-bottom: 3px;
+    }
+  </style>
+</head>
+<body>
+  <div class="cv-container">
+
+    <!-- Header -->
+    <h1 class="name">{{fullName}}</h1>
+    <p class="contact">
+      {{phone}} • {{email}} • {{linkedin}} • {{address}}
+    </p>
+
+    <!-- Summary -->
+    <h2 class="section-title">Summary</h2>
+    <p class="summary">
+      {{summary}}
+    </p>
+
+    <!-- Experience -->
+    <h2 class="section-title">Professional Experience</h2>
+    {{experience}}
+
+    <!-- Education -->
+    <h2 class="section-title">Education</h2>
+    {{education}}
+
+    <!-- Skills -->
+    <h2 class="section-title">Skills</h2>
+    <ul class="skills">
+      {{skills}}
+    </ul>
+
+    <!-- Projects -->
+    <h2 class="section-title">Projects</h2>
+    {{projects}}
+
+  </div>
+</body>
+</html>

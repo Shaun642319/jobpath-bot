@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>JobPath Bot</title>
+    <script src="https://code.iconify.design/1/1.0.4/iconify.min.js"></script>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="chat-container">
+      <label class="darkmode-toggle">
+        <input class="toggle-checkbox" type="checkbox" id="darkModeToggle" />
+        <div class="toggle-slot">
+          <div class="sun-icon-wrapper">
+            <div
+              class="iconify sun-icon"
+              data-icon="feather-sun"
+              data-inline="false"
+            ></div>
+          </div>
+          <div class="toggle-button"></div>
+          <div class="moon-icon-wrapper">
+            <div
+              class="iconify moon-icon"
+              data-icon="feather-moon"
+              data-inline="false"
+            ></div>
+          </div>
+        </div>
+      </label>
+
+      <div class="header">JobPath Bot</div>
+      <div class="messages" id="chatBox"></div>
+      <div class="input-area">
+        <input
+          type="text"
+          id="messageInput"
+          placeholder="Type your question..."
+        />
+        <button onclick="sendMessage()">Send</button>
+        <div class="cv-action">
+          <button id="cvBuilderBtn">Build CV</button>
+        </div>
+      </div>
+      <div class="quick-replies">
+        <button onclick="sendQuick('How do I write a cover letter?')">
+          How do I write a cover letter?
+        </button>
+        <button onclick="sendQuick('Tips for remote job interviews')">
+          Tips for remote job interviews
+        </button>
+        <button onclick="sendQuick('Make my CV better')">
+          Make my CV better
+        </button>
+      </div>
+    </div>
+
+    <script src="script.js"></script>
+  </body>
+</html>
