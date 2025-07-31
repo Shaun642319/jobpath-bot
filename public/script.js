@@ -67,13 +67,29 @@ const cvQuestions = [
 
 // ✅ Format bot reply for markdown-like effects
 function formatBotReply(text) {
-  return text
-    .replace(/(\*\*|__)(.*?)\1/g, "<strong>$2</strong>")
-    .replace(/(\*|_)(.*?)\1/g, "<em>$2</em>")
-    .replace(/`(.*?)`/g, "<code>$1</code>")
-    .replace(/\n/g, "<br>")
-    .replace(/\*(.*?)<br>/g, "• $1<br>");
+  // Convert headers
+  text = text
+    .replace(/^### (.*$)/gim, "<h3>$1</h3>")
+    .replace(/^## (.*$)/gim, "<h2>$1</h2>")
+    .replace(/^# (.*$)/gim, "<h1>$1</h1>");
+
+  // Bold and italic
+  text = text
+    .replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>")
+    .replace(/\*(.*?)\*/g, "<em>$1</em>");
+
+  // Inline code
+  text = text.replace(/`(.*?)`/g, "<code>$1</code>");
+
+  // Bullet points: Lines starting with *, -, or •
+  text = text.replace(/^\s*[-*•]\s+(.*)$/gim, "• $1");
+
+  // Convert line breaks to <br>
+  text = text.replace(/\n/g, "<br>");
+
+  return text;
 }
+
 
 // ✅ Append messages to chat
 function appendMessage(role, text) {
