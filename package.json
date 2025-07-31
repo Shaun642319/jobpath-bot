@@ -11,10 +11,11 @@
   "description": "",
   "dependencies": {
     "@google/genai": "^1.10.0",
+    "@sparticuz/chromium": "^138.0.2",
     "axios": "^1.10.0",
     "dotenv": "^17.2.0",
     "express": "^5.1.0",
     "nodemon": "^3.1.10",
-    "puppeteer": "^24.15.0"
+    "puppeteer-core": "^24.15.0"
   }
 }

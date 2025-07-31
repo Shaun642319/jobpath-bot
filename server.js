@@ -4,7 +4,8 @@ import path from "path";
 import { fileURLToPath } from "url";
 import { GoogleGenAI } from "@google/genai";
 import fs from "fs";
-import puppeteer from "puppeteer";
+import puppeteer from "puppeteer-core";
+import chromium from "@sparticuz/chromium";
 
 dotenv.config();
 
@@ -70,7 +71,6 @@ If the user asks something unrelated to careers, say:
       response?.candidates?.[0]?.content?.parts?.[0]?.text ||
       "Sorry, I didn't understand that.";
     res.json({ reply: text });
-
   } catch (err) {
     console.error("Gemini error:", err.message || err);
     res.status(500).json({ error: "Failed to get response from Gemini" });
@@ -89,7 +89,7 @@ app.post("/enhance-cv", async (req, res) => {
           role: "model",
           parts: [
             {
-             text: `You are a professional CV/Resume writer and enhancement assistant.
+              text: `You are a professional CV/Resume writer and enhancement assistant.
 Your task:
 - Rewrite and enhance the CV content to sound professional, impactful, and achievement-oriented.
 - Use strong action verbs and focus on quantifiable results where possible.
@@ -102,7 +102,7 @@ Example improvements:
 - "Worked on projects" → "Led cross-functional projects, improving team efficiency by 30%"
 - "Made a website" → "Developed and deployed a responsive web application serving 5,000 users"
 
-Here is the CV JSON to enhance:`  
+Here is the CV JSON to enhance:`,
             },
           ],
         },
@@ -147,12 +147,15 @@ app.post("/generate-cv", async (req, res) => {
       .replace(/{{linkedin}}/g, cvData.personalInfo.linkedin || "")
       .replace(/{{portfolio}}/g, cvData.personalInfo.portfolio || "")
       .replace(/{{summary}}/g, cvData.summary || "")
-      .replace(/{{skills}}/g, (cvData.skills || []).map(s => `<li>${s}</li>`).join(""))
+      .replace(
+        /{{skills}}/g,
+        (cvData.skills || []).map((s) => `<li>${s}</li>`).join("")
+      )
       .replace(
         /{{experience}}/g,
         (cvData.experience || [])
           .map(
-            exp => `
+            (exp) => `
             <p><strong>${exp.jobTitle}</strong> at ${exp.company} (${exp.startDate} - ${exp.endDate})</p>
             <p>${exp.description}</p>
           `
@@ -163,7 +166,8 @@ app.post("/generate-cv", async (req, res) => {
         /{{education}}/g,
         (cvData.education || [])
           .map(
-            edu => `<p>${edu.degree} - ${edu.institution} (${edu.startDate} - ${edu.endDate})</p>`
+            (edu) =>
+              `<p>${edu.degree} - ${edu.institution} (${edu.startDate} - ${edu.endDate})</p>`
           )
           .join("")
       )
@@ -171,7 +175,7 @@ app.post("/generate-cv", async (req, res) => {
         /{{projects}}/g,
         (cvData.projects || [])
           .map(
-            proj => `
+            (proj) => `
             <p><strong>${proj.name}</strong>: ${proj.description}</p>
             <p><em>Tech Stack:</em> ${(proj.techStack || []).join(", ")}</p>
           `
@@ -180,7 +184,12 @@ app.post("/generate-cv", async (req, res) => {
       );
 
     // Generate PDF
-    const browser = await puppeteer.launch({ headless: true });
+    const browser = await puppeteer.launch({
+      args: chromium.args,
+      defaultViewport: chromium.defaultViewport,
+      executablePath: await chromium.executablePath(),
+      headless: chromium.headless,
+    });
     const page = await browser.newPage();
     await page.setContent(html, { waitUntil: "networkidle0" });
     const pdfBuffer = await page.pdf({ format: "A4" });
@@ -191,7 +200,6 @@ app.post("/generate-cv", async (req, res) => {
       "Content-Disposition": 'attachment; filename="cv.pdf"',
     });
     res.send(pdfBuffer);
-
   } catch (err) {
     console.error("Generate CV error:", err.message || err);
     res.status(500).json({ error: "Failed to generate PDF" });
@@ -203,7 +211,7 @@ app.get("/", (req, res) => {
   res.send("Hello from JobPath Bot!");
 });
 
-const PORT = process.env.PORT || 5001; 
+const PORT = process.env.PORT || 5001;
 app.listen(PORT, () => {
   console.log(`🚀 Server running at http://localhost:${PORT}`);
 });
