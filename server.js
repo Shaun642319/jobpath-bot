@@ -24,15 +24,20 @@ app.get("/intro", (req, res) => {
   });
 });
 
-// ✅ 2. Normal chat with Gemini
+// ✅ 2. Normal chat with Gemini (modified to include userContext)
 app.post("/chat", async (req, res) => {
-  const { userMessage } = req.body;
+  const { userMessage, userContext } = req.body;
 
   if (!userMessage) {
     return res.status(400).json({ error: "No message provided" });
   }
 
   try {
+    // Combine userContext into a single string for Gemini
+    const contextText = Array.isArray(userContext) && userContext.length
+      ? `Here are the user's recent messages for context:\n${userContext.join("\n")}\n\n`
+      : "";
+
     const response = await ai.models.generateContent({
       model: "gemini-2.5-flash",
       contents: [
@@ -56,7 +61,9 @@ If the user greets you casually by saying "hi", "hello", or "hey", reply warmly 
 "Hi there! I'm JobPath Bot — your assistant for all things career. Ask me anything about job searching, CVs, interviews, or remote work!"
 
 If the user asks something unrelated to careers, say:
-"I'm here to help you with career and job-related queries. Could you ask something relevant to that?"`,
+"I'm here to help you with career and job-related queries. Could you ask something relevant to that?"
+
+${contextText}The user’s current message is:`,
             },
           ],
         },
@@ -77,7 +84,7 @@ If the user asks something unrelated to careers, say:
   }
 });
 
-// ✅ 3. Enhance CV JSON via Gemini
+// ✅ 3. Enhance CV JSON via Gemini (unchanged)
 app.post("/enhance-cv", async (req, res) => {
   const cvData = req.body;
 
@@ -130,7 +137,7 @@ Here is the CV JSON to enhance:`,
   }
 });
 
-// ✅ 4. Generate CV PDF
+// ✅ 4. Generate CV PDF (unchanged)
 app.post("/generate-cv", async (req, res) => {
   const cvData = req.body;
 
