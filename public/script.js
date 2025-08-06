@@ -5,6 +5,9 @@ let chatHistory = [];
 let isCvMode = false;
 let cvStep = 0;
 
+// ✅ Limit for user history
+const USER_HISTORY_LIMIT = 15;
+
 // ✅ Full JSON template for CV
 window.cvData = { 
   personalInfo: {
@@ -67,29 +70,16 @@ const cvQuestions = [
 
 // ✅ Format bot reply for markdown-like effects
 function formatBotReply(text) {
-  // Convert headers
-  text = text
+  return text
     .replace(/^### (.*$)/gim, "<h3>$1</h3>")
     .replace(/^## (.*$)/gim, "<h2>$1</h2>")
-    .replace(/^# (.*$)/gim, "<h1>$1</h1>");
-
-  // Bold and italic
-  text = text
+    .replace(/^# (.*$)/gim, "<h1>$1</h1>")
     .replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>")
-    .replace(/\*(.*?)\*/g, "<em>$1</em>");
-
-  // Inline code
-  text = text.replace(/`(.*?)`/g, "<code>$1</code>");
-
-  // Bullet points: Lines starting with *, -, or •
-  text = text.replace(/^\s*[-*•]\s+(.*)$/gim, "• $1");
-
-  // Convert line breaks to <br>
-  text = text.replace(/\n/g, "<br>");
-
-  return text;
+    .replace(/\*(.*?)\*/g, "<em>$1</em>")
+    .replace(/`(.*?)`/g, "<code>$1</code>")
+    .replace(/^\s*[-*•]\s+(.*)$/gim, "• $1")
+    .replace(/\n/g, "<br>");
 }
-
 
 // ✅ Append messages to chat
 function appendMessage(role, text) {
@@ -100,10 +90,30 @@ function appendMessage(role, text) {
   chatBox.scrollTo({ top: chatBox.scrollHeight, behavior: "smooth" });
 }
 
+// ✅ Save only user messages to localStorage (limit)
+function saveUserMessage(message) {
+  let userHistory = JSON.parse(localStorage.getItem("userHistory")) || [];
+  userHistory.push({ message, timestamp: Date.now() });
+
+  if (userHistory.length > USER_HISTORY_LIMIT) {
+    userHistory = userHistory.slice(-USER_HISTORY_LIMIT);
+  }
+
+  localStorage.setItem("userHistory", JSON.stringify(userHistory));
+}
+
+// ✅ Retrieve last N user messages for context
+function getUserContext(limit = 10) {
+  const userHistory = JSON.parse(localStorage.getItem("userHistory")) || [];
+  return userHistory.slice(-limit).map(entry => entry.message);
+}
+
 // ✅ Handle sending a normal or CV message
 async function sendMessage() {
   const message = input.value.trim();
   if (!message) return;
+
+  saveUserMessage(message);
 
   appendMessage("user", message);
   chatHistory.push({ role: "user", text: message });
@@ -123,10 +133,15 @@ async function sendMessage() {
   chatBox.scrollTop = chatBox.scrollHeight;
 
   try {
+    const userContext = getUserContext(10);
+
     const res = await fetch("/chat", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ userMessage: message, history: chatHistory }),
+      body: JSON.stringify({ 
+        userMessage: message,
+        userContext // ✅ Only sending limited user messages to Node backend
+      }),
     });
 
     const data = await res.json();
@@ -137,6 +152,7 @@ async function sendMessage() {
     chatHistory.push({ role: "bot", text: data.reply });
 
   } catch (err) {
+    const typingDiv = document.getElementById("typing");
     if (typingDiv) typingDiv.remove();
     appendMessage("bot", "⚠️ Failed to get response.");
   }
@@ -197,13 +213,7 @@ async function sendCVToGemini(cvData) {
   const btn = document.createElement("button");
   btn.textContent = "📄 Download CV";
   btn.onclick = generatePDF;
-  btn.style.marginTop = "10px";
-  btn.style.padding = "10px 16px";
-  btn.style.backgroundColor = "#007bff";
-  btn.style.color = "#fff";
-  btn.style.border = "none";
-  btn.style.borderRadius = "5px";
-  btn.style.cursor = "pointer";
+  btn.style.cssText = "margin-top:10px;padding:10px 16px;background:#007bff;color:#fff;border:none;border-radius:5px;cursor:pointer";
 
   const btnWrapper = document.createElement("div");
   btnWrapper.className = "message bot";
@@ -231,25 +241,11 @@ function generatePDF() {
 // ✅ Dark mode toggle
 function darkMode(forceState) {
   const body = document.body;
-  let isDarkMode;
-
-  if (typeof forceState === "boolean") {
-    isDarkMode = forceState;
-  } else {
-    isDarkMode = !body.classList.contains("dark-mode");
-  }
-
-  if (isDarkMode) {
-    body.classList.add("dark-mode");
-    darkModeToggle.checked = true;
-  } else {
-    body.classList.remove("dark-mode");
-    darkModeToggle.checked = false;
-  }
-
+  const isDarkMode = typeof forceState === "boolean" ? forceState : !body.classList.contains("dark-mode");
+  body.classList.toggle("dark-mode", isDarkMode);
+  darkModeToggle.checked = isDarkMode;
   localStorage.setItem("darkMode", isDarkMode);
 }
-
 
 // ✅ Quick reply support
 function sendQuick(quickMessage) {
@@ -265,19 +261,18 @@ darkModeToggle.addEventListener("change", () => {
 input.addEventListener("keypress", (e) => {
   if (e.key === "Enter") {
     e.preventDefault();
-    sendMessage()
-  };
+    sendMessage();
+  }
 });
 
-// ✅ Intro message
+// ✅ Intro message & restore dark mode
 window.addEventListener("DOMContentLoaded", async () => {
   const res = await fetch("/intro");
   const data = await res.json();
   appendMessage("bot", formatBotReply(data.intro));
 
-  // Restore dark mode state
   const savedMode = localStorage.getItem("darkMode") === "true";
-  darkMode(savedMode)
+  darkMode(savedMode);
 });
 
 // ✅ CV Builder Button
