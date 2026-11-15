@@ -1,21 +1,35 @@
+
 {
   "name": "jobpath-bot",
   "version": "1.0.0",
-  "main": "index.js",
+  "description": "AI-powered career guidance chatbot with Gemini integration, interview preparation, and automated CV generation.",
+  "type": "module",
+  "main": "server.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "node server.js",
+    "dev": "nodemon server.js"
   },
-  "keywords": [],
+  "keywords": [
+    "ai",
+    "chatbot",
+    "career-guidance",
+    "gemini",
+    "nodejs",
+    "express",
+    "resume-builder",
+    "cv-generator"
+  ],
   "author": "",
   "license": "ISC",
-  "description": "",
   "dependencies": {
     "@google/genai": "^1.10.0",
     "@sparticuz/chromium": "^138.0.2",
     "axios": "^1.10.0",
     "dotenv": "^17.2.0",
     "express": "^5.1.0",
-    "nodemon": "^3.1.10",
     "puppeteer-core": "^24.15.0"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.10"
   }
 }
